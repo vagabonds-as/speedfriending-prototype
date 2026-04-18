@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8"/>
+<title>Speedfriending — Full app-prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,700&display=swap" rel="stylesheet"/>
+<style>
+  html,body{margin:0;padding:0;background:#EBE4E0;min-height:100vh;font-family:"SF Pro Display","Roboto",system-ui;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="shared_home.jsx"></script>
+<script type="text/babel" src="screen_home.jsx"></script>
+<script type="text/babel" src="screen_events.jsx"></script>
+<script type="text/babel" src="screen_chat.jsx"></script>
+<script type="text/babel" src="screen_crew.jsx"></script>
+<script type="text/babel" src="screen_you.jsx"></script>
+<script type="text/babel" src="screen_edge_cases.jsx"></script>
+<script type="text/babel" src="screen_monetization.jsx"></script>
+<script type="text/babel" src="screen_onboarding_extras.jsx"></script>
+<script type="text/babel" src="screen_ambassador_create.jsx"></script>
+<script type="text/babel" src="screen_ambassador_live.jsx"></script>
+<script type="text/babel" src="screen_ambassador_support.jsx"></script>
+<script type="text/babel" src="screen_wrapped.jsx"></script>
+<script type="text/babel" src="screen_b2b.jsx"></script>
+<script type="text/babel" src="screen_b2b_platform.jsx"></script>
+<script type="text/babel" src="screen_search_filter.jsx"></script>
+<script type="text/babel" src="screen_system.jsx"></script>
+<script type="text/babel" src="screen_social_utilities.jsx"></script>
+<script type="text/babel" src="screen_seasonal.jsx"></script>
+<script type="text/babel" src="screen_website.jsx"></script>
+<script type="text/babel" src="screen_advanced_features.jsx"></script>
+<script type="text/babel" src="screen_business.jsx"></script>
+<script type="text/babel" src="screen_dating.jsx"></script>
+
+<script type="text/babel">
+/* global React, ReactDOM, H_Phone, HC */
+const { useState } = React;
+
+const TABS = {
+  home:   { comp: ()=><window.H_ScreenHome/>, label:'Hjem' },
+  events: { comp: ()=><window.H_ScreenEvents/>, label:'Events' },
+  crew:   { comp: ()=><window.H_ScreenCrewList onOpenCrew={()=>{}} onOpenChat={()=>{}}/>, label:'Crew' },
+  chat:   { comp: ()=><window.H_ScreenChatList/>, label:'Chat' },
+  you:    { comp: ()=><window.H_ScreenProfile/>, label:'Deg' },
+};
+
+const EXTRA_SCREENS = [
+  { key:'search',        group:'Events',      label:'Søk (events + personer + venuer)', comp: ()=><window.H_ScreenSearch/> },
+  { key:'filter',        group:'Events',      label:'Filter (prisrange, dag, type)', comp: ()=><window.H_ScreenFilter/> },
+  { key:'welcome',       group:'Onboarding',  label:'Velkomst',                comp: ()=><window.H_ScreenWelcome/> },
+  { key:'empty-oslo',    group:'Onboarding',  label:'Tom-tilstand Oslo',        comp: ()=><window.H_ScreenEmptyOslo/> },
+  { key:'friend-prof',   group:'Sosialt',     label:'Venn-profil (Kari)',       comp: ()=><window.H_ScreenFriendProfile/> },
+  { key:'memories',      group:'Sosialt',     label:'Felles minner',            comp: ()=><window.H_ScreenSharedMemories/> },
+  { key:'invitation',    group:'Sosialt',     label:'Invitasjon fra venn',      comp: ()=><window.H_ScreenInvitationReceived/> },
+  { key:'crew-detail',   group:'Crew',        label:'Crew-detalj',              comp: ()=><window.H_ScreenCrewDetail/> },
+  { key:'crew-chat',     group:'Crew',        label:'Crew-chat',                comp: ()=><window.H_ScreenCrewChat/> },
+  { key:'frida',         group:'Chat',        label:'Frida-chat (AI)',          comp: ()=><window.H_ScreenFridaChat/> },
+  { key:'chat-detail',   group:'Chat',        label:'Chat: Viktor + Kari',      comp: ()=><window.H_ScreenChatDetail/> },
+  { key:'portfolio',     group:'Deg',         label:'Dine kontakter',           comp: ()=><window.H_ScreenPortfolio/> },
+  { key:'settings',      group:'Deg',         label:'Innstillinger',            comp: ()=><window.H_ScreenSettings/> },
+  { key:'health',        group:'Deg',         label:'Sosial helse',             comp: ()=><window.H_ScreenHealth/> },
+  { key:'confirm',       group:'Booking',     label:'Bekreftelse',              comp: ()=><window.H_ScreenConfirmation/> },
+  { key:'cancel',        group:'Booking',     label:'Avbestilling',             comp: ()=><window.H_ScreenCancel/> },
+  { key:'waitlist',      group:'Booking',     label:'Venteliste (fullt)',       comp: ()=><window.H_ScreenWaitlist/> },
+  { key:'late',          group:'Booking',     label:'Sen ankomst',              comp: ()=><window.H_ScreenLateArrival/> },
+  { key:'amb-cancel',    group:'Booking',     label:'Ambassadør avlyser',       comp: ()=><window.H_ScreenAmbassadorCancelled/> },
+  { key:'premium',       group:'Monetisering', label:'Premium (Speedfriending+)', comp: ()=><window.H_ScreenPremium/> },
+  { key:'premium-manage',group:'Monetisering', label:'Administrer Premium',    comp: ()=><window.H_ScreenPremiumManage/> },
+  { key:'referral',      group:'Monetisering', label:'Inviter venn (referral)', comp: ()=><window.H_ScreenReferral/> },
+  { key:'take-friend',   group:'Monetisering', label:'Ta med venn (etter reservasjon)', comp: ()=><window.H_ScreenInviteFriend/> },
+  { key:'amb-create',    group:'Ambassadør',  label:'Opprett event (4 steg)',   comp: ()=><window.H_ScreenAmbCreate/> },
+  { key:'amb-create-1',  group:'Ambassadør',  label:'1. Konsept',               comp: ()=><window.H_ScreenAmbCreate1/> },
+  { key:'amb-create-2',  group:'Ambassadør',  label:'2. Detaljer',              comp: ()=><window.H_ScreenAmbCreate2/> },
+  { key:'amb-create-3',  group:'Ambassadør',  label:'3. Samtalestartere',       comp: ()=><window.H_ScreenAmbCreate3/> },
+  { key:'amb-create-4',  group:'Ambassadør',  label:'4. Forhåndsvisning',       comp: ()=><window.H_ScreenAmbCreate4/> },
+  { key:'amb-checkin',   group:'Ambassadør',  label:'Under event: innsjekk',    comp: ()=><window.H_ScreenAmbCheckin/> },
+  { key:'amb-during',    group:'Ambassadør',  label:'Under event: live',        comp: ()=><window.H_ScreenAmbDuring/> },
+  { key:'amb-after',     group:'Ambassadør',  label:'Etter event: sammendrag',  comp: ()=><window.H_ScreenAmbAfter/> },
+  { key:'amb-payout',    group:'Ambassadør',  label:'Utbetaling',               comp: ()=><window.H_ScreenAmbPayout/> },
+  { key:'amb-crisis',    group:'Ambassadør',  label:'Krisehåndtering',          comp: ()=><window.H_ScreenAmbCrisis/> },
+  { key:'amb-resources', group:'Ambassadør',  label:'Ressursbibliotek',         comp: ()=><window.H_ScreenAmbResources/> },
+  { key:'wrapped',       group:'Wrapped',     label:'Wrapped 2026 (12 skjermer)', comp: ()=><window.H_ScreenWrapped/> },
+  { key:'b2b-landing',   group:'B2B',         label:'B2B landingsside',         comp: ()=><window.H_ScreenB2BLanding/> },
+  { key:'b2b-dashboard', group:'B2B',         label:'HR-dashboard',             comp: ()=><window.H_ScreenB2BDashboard/> },
+  { key:'loneliness',    group:'B2B',         label:'Loneliness Report Oslo',   comp: ()=><window.H_ScreenLonelinessReport/> },
+  { key:'payment-fail',  group:'System',      label:'Betaling feilet (Vipps)',  comp: ()=><window.H_ScreenPaymentFailed/> },
+  { key:'offline',       group:'System',      label:'Ingen nett (offline)',     comp: ()=><window.H_ScreenOffline/> },
+  { key:'welcome-back',  group:'System',      label:'Velkommen tilbake (etter pause)', comp: ()=><window.H_ScreenWelcomeBack/> },
+  { key:'remove-block',  group:'Moderasjon',  label:'Fjern venn / blokker',     comp: ()=><window.H_ScreenRemoveBlock/> },
+  { key:'report',        group:'Moderasjon',  label:'Rapporter bruker',         comp: ()=><window.H_ScreenReport/> },
+  { key:'polaroid-share',group:'Moderasjon',  label:'Del polaroid utgående',    comp: ()=><window.H_ScreenPolaroidShare/> },
+  { key:'calendar',      group:'Moderasjon',  label:'Kalenderinvitasjon',       comp: ()=><window.H_ScreenCalendarInvite/> },
+  { key:'seasonal-christmas',  group:'Sesongalt', label:'Jul alene (23–26. des)',       comp: ()=><window.H_ScreenChristmas/> },
+  { key:'seasonal-may17-morn', group:'Sesongalt', label:'17. mai-frokost',              comp: ()=><window.H_ScreenMay17Morning/> },
+  { key:'seasonal-may17-eve',  group:'Sesongalt', label:'17. mai-kveld',                comp: ()=><window.H_ScreenMay17Evening/> },
+  { key:'seasonal-newyear',    group:'Sesongalt', label:'Nyttårsaften-events',          comp: ()=><window.H_ScreenNewYear/> },
+  { key:'seasonal-summer',     group:'Sesongalt', label:'Sommerprogram (jun–aug)',      comp: ()=><window.H_ScreenSummer/> },
+  { key:'seasonal-winter',     group:'Sesongalt', label:'Vinter-modus (UI-variant)',    comp: ()=><window.H_ScreenWinterMode/> },
+  { key:'loneliness-norway',   group:'B2B',       label:'Loneliness Report Norway',     comp: ()=><window.H_ScreenLonelinessReportNorway/> },
+  { key:'web-home',        group:'Nettside',  label:'Hovedside · forbruker',       comp: ()=><window.H_WebHome/>,       web:true },
+  { key:'web-ambassador',  group:'Nettside',  label:'Ambassadør-landing',          comp: ()=><window.H_WebAmbassador/>, web:true },
+  { key:'web-business',    group:'Nettside',  label:'B2B-landing (Teams)',         comp: ()=><window.H_WebBusiness/>,   web:true },
+  { key:'web-sponsor',     group:'Nettside',  label:'Sponsor-landing',             comp: ()=><window.H_WebSponsor/>,    web:true },
+  { key:'web-press',       group:'Nettside',  label:'Presse-side',                 comp: ()=><window.H_WebPress/>,      web:true },
+  { key:'web-investor',    group:'Nettside',  label:'Investor-side',               comp: ()=><window.H_WebInvestor/>,   web:true },
+  { key:'b2bp-landing',     group:'B2B-plattform', label:'1 · Hero-landing (M1)',         comp: ()=><window.H_B2BLanding2/> },
+  { key:'b2bp-packages',    group:'B2B-plattform', label:'2 · Pakke-oversikt (5)',        comp: ()=><window.H_B2BPackages/> },
+  { key:'b2bp-connect',     group:'B2B-plattform', label:'3 · Connect 85k detalj',        comp: ()=><window.H_B2BConnectDetail/> },
+  { key:'b2bp-custom',      group:'B2B-plattform', label:'4 · Custom-forespørsel',        comp: ()=><window.H_B2BCustomRequest/> },
+  { key:'b2bp-dashboard',   group:'B2B-plattform', label:'5 · HR-dashboard (Cognite)',    comp: ()=><window.H_B2BHRDashboard2/> },
+  { key:'b2bp-report',      group:'B2B-plattform', label:'6 · HR aggregert rapport',      comp: ()=><window.H_B2BHRReport/> },
+  { key:'b2bp-sponsor',     group:'B2B-plattform', label:'7 · Sponsor-landing (M4)',      comp: ()=><window.H_SponsorLanding/> },
+  { key:'b2bp-sp-packages', group:'B2B-plattform', label:'8 · Sponsor-pakker (3)',        comp: ()=><window.H_SponsorPackages/> },
+  { key:'b2bp-sp-dash',     group:'B2B-plattform', label:'9 · Sponsor-dashboard (Aperol)',comp: ()=><window.H_SponsorDashboard/> },
+  { key:'b2bp-sp-integ',    group:'B2B-plattform', label:'10 · Sponsor-integrering',      comp: ()=><window.H_SponsorIntegration/> },
+  { key:'b2bp-sp-report',   group:'B2B-plattform', label:'11 · Sponsor-rapport Q2 2027',  comp: ()=><window.H_SponsorReport/> },
+  { key:'b2bp-impact',      group:'B2B-plattform', label:'12 · Impact-rapport (felles)',  comp: ()=><window.H_ImpactReport/> },
+];
+
+function App() {
+  const [mode, setMode] = useState('tabs'); // 'tabs' eller 'extra'
+  const [activeTab, setActiveTab] = useState('home');
+  const [extraKey, setExtraKey] = useState('welcome');
+
+  const activeExtra = EXTRA_SCREENS.find(s => s.key === extraKey) || EXTRA_SCREENS[0];
+  const currentScreen = mode === 'tabs'
+    ? TABS[activeTab].comp()
+    : activeExtra.comp();
+
+  // Web-skjermer (speedfriending.no-prototyper) skal rendres uten app-tab-bar.
+  const isWebScreen = mode === 'extra' && activeExtra.web === true;
+  const phoneActiveTab = isWebScreen ? undefined : activeTab;
+
+  const groups = {};
+  EXTRA_SCREENS.forEach(s => { if (!groups[s.group]) groups[s.group] = []; groups[s.group].push(s); });
+
+  return (
+    <div style={{minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'44px 20px 60px', background:'linear-gradient(160deg,#EBE4E0 0%,#D9CEC8 100%)'}}>
+      <div style={{maxWidth:780, width:'100%', textAlign:'center', marginBottom:26}}>
+        <div style={{display:'inline-block', fontSize:10.5, fontWeight:700, letterSpacing:'.18em', textTransform:'uppercase', color:'#7F4D95', marginBottom:10}}>
+          Speedfriending · Komplett app-prototype · {mode === 'tabs' ? 'Hovednavigasjon' : 'Støtteskjermer'}
+        </div>
+        <h1 style={{margin:0, fontSize:32, fontWeight:700, letterSpacing:'-0.02em', color:'#2A2134', lineHeight:1.1}}>
+          {mode === 'tabs' ? 'Hovedtabs (5)' : 'Alle skjermer (21 flere)'}
+        </h1>
+        <p style={{margin:'10px auto 0', maxWidth:560, fontSize:14, color:'rgba(42,33,52,.68)', lineHeight:1.5}}>
+          {mode === 'tabs'
+            ? 'Klikk tabs-ene nederst for å navigere mellom hovedområdene. Eller bytt til støtteskjermer under.'
+            : 'Alle edge cases, sosiale flyter, monetisering og onboarding. Klikk for å bla.'}
+        </p>
+      </div>
+
+      {/* Mode toggle */}
+      <div style={{marginBottom:20, display:'flex', gap:6, background:'rgba(255,255,255,.6)', padding:4, borderRadius:24}}>
+        <button onClick={()=>setMode('tabs')} style={{padding:'10px 18px', borderRadius:20, border:'none', background: mode==='tabs' ? '#7F4D95' : 'transparent', color: mode==='tabs' ? '#fff' : '#2A2134', fontSize:13, fontWeight:600, cursor:'pointer'}}>
+          5 hovedtabs
+        </button>
+        <button onClick={()=>setMode('extra')} style={{padding:'10px 18px', borderRadius:20, border:'none', background: mode==='extra' ? '#7F4D95' : 'transparent', color: mode==='extra' ? '#fff' : '#2A2134', fontSize:13, fontWeight:600, cursor:'pointer'}}>
+          21 støtteskjermer
+        </button>
+      </div>
+
+      <H_Phone activeTab={phoneActiveTab} onTabChange={mode === 'tabs' ? setActiveTab : undefined}>
+        {currentScreen}
+      </H_Phone>
+
+      {mode === 'extra' && (
+        <div style={{maxWidth:900, marginTop:36, width:'100%'}}>
+          {Object.entries(groups).map(([group, screens]) => (
+            <div key={group} style={{marginBottom:18}}>
+              <div style={{fontSize:10.5, fontWeight:700, letterSpacing:'.18em', textTransform:'uppercase', color:'#7F4D95', marginBottom:10}}>{group}</div>
+              <div style={{display:'flex', flexWrap:'wrap', gap:8}}>
+                {screens.map(s => (
+                  <button key={s.key} onClick={()=>setExtraKey(s.key)} style={{
+                    padding:'10px 14px', borderRadius:12, border: extraKey===s.key ? '1.5px solid #7F4D95' : '1px solid rgba(42,33,52,.12)',
+                    background: extraKey===s.key ? '#fff' : 'rgba(255,255,255,.55)', cursor:'pointer',
+                    fontSize:12.5, fontWeight: extraKey===s.key ? 700 : 500, color: extraKey===s.key ? '#7F4D95' : '#2A2134',
+                    boxShadow: extraKey===s.key ? '0 4px 10px rgba(127,77,149,.15)' : 'none',
+                  }}>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

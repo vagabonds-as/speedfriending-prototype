@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8"/>
+<title>Speedfriending — Klikkbar prototype v2 (Storylines)</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet"/>
+<style>
+  html,body{margin:0;padding:0;background:#0F0812;min-height:100vh;font-family:"SF Pro Display","Roboto",system-ui;-webkit-font-smoothing:antialiased;color:#fff}
+  *{box-sizing:border-box}
+  @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:.3} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="shared_home.jsx"></script>
+<script type="text/babel" src="screen_home.jsx"></script>
+<script type="text/babel" src="screen_events.jsx"></script>
+<script type="text/babel" src="screen_chat.jsx"></script>
+<script type="text/babel" src="screen_crew.jsx"></script>
+<script type="text/babel" src="screen_you.jsx"></script>
+<script type="text/babel" src="screen_edge_cases.jsx"></script>
+<script type="text/babel" src="screen_monetization.jsx"></script>
+<script type="text/babel" src="screen_onboarding_extras.jsx"></script>
+<script type="text/babel" src="screen_ambassador_create.jsx"></script>
+<script type="text/babel" src="screen_ambassador_live.jsx"></script>
+<script type="text/babel" src="screen_ambassador_support.jsx"></script>
+<script type="text/babel" src="screen_wrapped.jsx"></script>
+<script type="text/babel" src="screen_b2b.jsx"></script>
+<script type="text/babel" src="screen_b2b_platform.jsx"></script>
+<script type="text/babel" src="screen_search_filter.jsx"></script>
+<script type="text/babel" src="screen_system.jsx"></script>
+<script type="text/babel" src="screen_social_utilities.jsx"></script>
+<script type="text/babel" src="screen_seasonal.jsx"></script>
+<script type="text/babel" src="screen_website.jsx"></script>
+<script type="text/babel" src="screen_advanced_features.jsx"></script>
+<script type="text/babel" src="screen_business.jsx"></script>
+<script type="text/babel" src="screen_dating.jsx"></script>
+
+<script type="text/babel">
+/* global React, ReactDOM, H_Phone, HC */
+const { useState, useEffect, useRef } = React;
+
+// ═════════════════════════════════════════════════════════════════
+// STORYLINES — tverr-reiser gjennom produktet
+// ═════════════════════════════════════════════════════════════════
+// Hver storyline er en kronologisk reise gjennom flere flows.
+// Den viser en ekte produktlivsreise, ikke bare isolerte skjermer.
+// ═════════════════════════════════════════════════════════════════
+
+const STORYLINES = {
+  'karin-year': {
+    label: 'Karins år',
+    persona: 'Karin, 28, nyinnflyttet til Oslo',
+    color: '#F0826B',
+    description: 'Komplett brukerreise fra installasjon til ambassadør-fristelse — 12 måneder på 14 skjermer',
+    steps: [
+      { screen: ()=><window.H_WebHome/>,                phone: 'web',    title: 'Januar',   context: 'Karin har flyttet til Oslo for en ny jobb. Hun leter etter måter å møte folk. Finner speedfriending.no på Instagram.' },
+      { screen: ()=><window.H_ScreenWelcome/>,          phone: 'app',    title: 'Januar',   context: 'Hun installerer appen. Første skjerm etter åpning.' },
+      { screen: ()=><window.H_ScreenEmptyOslo/>,        phone: 'app',    title: 'Januar',   context: 'Hennes bydel (Nordre Aker) har ennå ikke nok events. Men sentrum er 15 min unna.' },
+      { screen: ()=><window.H_ScreenHome/>,             phone: 'home',   title: 'Februar',  context: 'To uker senere. Hun har vært på 2 events. Dagens tilbud er vinkveld på Søstrene Karlsen.' },
+      { screen: ()=><window.H_ScreenEvents/>,           phone: 'events', title: 'Februar',  context: 'Hun blar i feeden og ser sitt første event.' },
+      { screen: ()=><window.H_ScreenConfirmation/>,     phone: 'app',    title: 'Februar',  context: 'Reservasjonen er bekreftet. Hun gleder seg.' },
+      { screen: ()=><window.H_ScreenChatList/>,         phone: 'chat',   title: 'Mars',     context: 'Morgenen etter et event. Hun har en ny kontakt i chatten: Kari.' },
+      { screen: ()=><window.H_ScreenChatDetail/>,       phone: 'app',    title: 'Mars',     context: 'Første melding mellom Karin og Kari. De avtaler kaffe.' },
+      { screen: ()=><window.H_ScreenCrewList onOpenCrew={()=>{}} onOpenChat={()=>{}}/>, phone: 'crew', title: 'Mai', context: 'Tre måneder inn. Hun er del av et crew med 4 andre. De har møttes 5 ganger.' },
+      { screen: ()=><window.H_ScreenCrewDetail/>,       phone: 'app',    title: 'Mai',      context: 'Onsdags-crewet. Sammen 12 timer. Felles tags: brettspill, rolig tempo.' },
+      { screen: ()=><window.H_ScreenPortfolio/>,        phone: 'you',    title: 'August',   context: 'Hun ser sine kontakter. 14 mennesker. 3 nære. Hun er ikke alene lenger.' },
+      { screen: ()=><window.H_ScreenHealth/>,           phone: 'app',    title: 'Oktober',  context: 'Frida gir henne månedsrapporten. Kurven har falt fra "ofte ensom" til "moderat tilkoblet".' },
+      { screen: ()=><window.H_ScreenWrapped/>,          phone: 'app',    title: 'Desember', context: 'Wrapped 2026. Hun blar gjennom. 14 events, 12 nye mennesker, 1 nær venn.' },
+      { screen: ()=><window.H_WebAmbassador/>,          phone: 'web',    title: 'Januar 2027', context: 'Etter Wrapped ser hun "Bli ambassadør"-knappen. Hun tenker: jeg har lært mye om dette. Kan jeg gi tilbake?' },
+    ],
+  },
+
+  'become-ambassador': {
+    label: 'Bli ambassadør',
+    persona: 'Viktor, 35, aktiv bruker i 8 måneder',
+    color: '#7F4D95',
+    description: 'En bruker som bestemmer seg for å bli vert — fra inspirasjon til første arrangerte event',
+    steps: [
+      { screen: ()=><window.H_ScreenProfile/>,           phone: 'you',    title: 'Oppdagelse', context: 'Viktor åpner sin profil. Ser en "Bli vertinne?"-boks nederst. Klikker.' },
+      { screen: ()=><window.H_WebAmbassador/>,           phone: 'web',    title: 'Vurdering',  context: 'Han leser om ambassadør-rollen. 2-5k kr bi-inntekt, 1 kveld/uke, opplæring inkludert.' },
+      { screen: ()=><window.H_ScreenAmbCreate1/>,        phone: 'app',    title: 'Første event', context: 'Etter godkjenning og opplæring. Han planlegger sitt første event.' },
+      { screen: ()=><window.H_ScreenAmbCreate2/>,        phone: 'app',    title: 'Detaljer',   context: 'Velger Territoriet som venue, 8 plasser, 149 kr.' },
+      { screen: ()=><window.H_ScreenAmbCreate3/>,        phone: 'app',    title: 'Samtaler',   context: 'Velger 5 samtalestartere fra biblioteket.' },
+      { screen: ()=><window.H_ScreenAmbCreate4/>,        phone: 'app',    title: 'Publiser',   context: 'Ser hvordan deltakere vil se eventet. Publiserer.' },
+      { screen: ()=><window.H_ScreenAmbCheckin/>,        phone: 'app',    title: 'Kveldens dag', context: 'Ti dager senere. Han står i døra på Territoriet, skanner QR-koder.' },
+      { screen: ()=><window.H_ScreenAmbDuring/>,         phone: 'app',    title: 'Under eventet', context: '1 t 35 min inne. Vinsmaking går fint. Han tar en kort notat.' },
+      { screen: ()=><window.H_ScreenAmbAfter/>,          phone: 'app',    title: 'Etter',      context: 'Eventet er over. Inntjening: 360 kr. NPS: +72. Han vil gjøre det igjen.' },
+      { screen: ()=><window.H_ScreenAmbPayout/>,         phone: 'app',    title: 'Utbetaling', context: 'Måneden etter. Han har arrangert 6 events. Vipps-utbetaling 2,847 kr er på vei.' },
+    ],
+  },
+
+  'hr-ingrid': {
+    label: 'HR-leder Ingrid',
+    persona: 'Ingrid, 45, HR-ansvarlig hos Cognite',
+    color: '#3E8F65',
+    description: 'Fra Aftenposten-artikkel til full B2B-rollout — salg-syklusen på 9 skjermer',
+    steps: [
+      { screen: ()=><window.H_ScreenLonelinessReport/>,  phone: 'web',    title: 'Torsdag',    context: 'Ingrid leser Loneliness Report Oslo etter å ha sett Aftenposten-artikkel. Hun er HR-leder hos Cognite.' },
+      { screen: ()=><window.H_WebBusiness/>,             phone: 'web',    title: 'Torsdag',    context: 'Hun går til speedfriending.no/business. Ser case-studier. Klikker "Book demo".' },
+      { screen: ()=><window.H_B2BLanding2/>,             phone: 'web',    title: 'Uke 1',      context: 'Etter demo. Hun er på B2B-portalen. Vurderer pakker for Cognites 124 ansatte.' },
+      { screen: ()=><window.H_B2BPackages/>,             phone: 'web',    title: 'Uke 2',      context: 'Hun ser de 5 pakkene. Connect (85k kr, 30 ansatte-plasser, 3 mnd) passer pilot.' },
+      { screen: ()=><window.H_B2BConnectDetail/>,        phone: 'web',    title: 'Uke 3',      context: 'Hun leser Connect-detaljene. Tidslinje, privacy-garantier. Signerer.' },
+      { screen: ()=><window.H_B2BHRDashboard2/>,         phone: 'web',    title: 'Måned 1',    context: 'Etter signering og første event. 23 av 30 plasser er aktivert. To events levert.' },
+      { screen: ()=><window.H_B2BHRReport/>,             phone: 'web',    title: 'Måned 3',    context: 'Q2 2027-rapport. 42% av aktive rapporterer sterkere sosial tilkobling.' },
+      { screen: ()=><window.H_ImpactReport/>,            phone: 'web',    title: 'Måned 6',    context: 'Den samlede Impact-rapporten. Cognite blir case-study i neste utgave.' },
+      { screen: ()=><window.H_B2BCustomRequest/>,        phone: 'web',    title: 'Måned 6',    context: 'Ingrid vil utvide fra 30 til hele 124 ansatte. Hun fyller ut custom-skjema.' },
+    ],
+  },
+
+  'aperol-sponsor': {
+    label: 'Aperol blir sponsor',
+    persona: 'Marte, 38, markedsdirektør Aperol Norge',
+    color: '#D9A24A',
+    description: 'Fra Impact Report-artikkel til signert partnerskap på 8 skjermer',
+    steps: [
+      { screen: ()=><window.H_ImpactReport/>,            phone: 'web',    title: 'Inspirasjon', context: 'Marte leser Speedfriending × FHI × Oslo Nye Sparebank Impact Report. Hun ser muligheten for Aperol.' },
+      { screen: ()=><window.H_SponsorLanding/>,          phone: 'web',    title: 'Landing',     context: 'Hun går til sponsor-siden. Ser potensialet: 100 events, 5-8 000 deltakere, 1M+ sosiale medier-inntrykk.' },
+      { screen: ()=><window.H_SponsorPackages/>,         phone: 'web',    title: 'Vurdering',   context: 'Hun vurderer de 3 tiers. Hovedsponsor (750k kr, 100 events) passer Aperols nasjonale kampanje.' },
+      { screen: ()=><window.H_ScreenDatingBadge/>,       phone: 'app',    title: 'Innsikt',     context: 'Før hun signerer, sjekker hun hvordan events ser ut i appen. Hun vil ikke være "reklame".' },
+      { screen: ()=><window.H_SponsorIntegration/>,      phone: 'web',    title: 'Signert',     context: 'Etter pitch-møte og signering. Hun ser hvordan Aperol integreres på events — diskret, "Presented by".' },
+      { screen: ()=><window.H_SponsorDashboard/>,        phone: 'web',    title: 'Måned 1',     context: 'Første måned. 12 av 100 events levert. Live statistikk.' },
+      { screen: ()=><window.H_SponsorReport/>,           phone: 'web',    title: 'Måned 3',     context: 'Q2 2027. 32 events levert. 2,847 deltakere møttes under Aperol-branding. NPS +68.' },
+      { screen: ()=><window.H_SponsorLanding/>,          phone: 'web',    title: 'Fornyelse',   context: 'Etter ett år. Hun signerer ny 2-årig kontrakt. Økte budsjettet med 40%.' },
+    ],
+  },
+
+  'dating-discovery': {
+    label: 'Dating-oppdagelsen',
+    persona: 'Anne, 34, aktiv bruker i 1 år',
+    color: '#E8B8A0',
+    description: 'Fra sosialt event til romantisk match — med full samtykke-arkitektur',
+    steps: [
+      { screen: ()=><window.H_ScreenEvents/>,            phone: 'events', title: 'Torsdag',    context: 'Anne blar i events-feeden. Ser et nytt event med coral-badge: "Dating-kveld".' },
+      { screen: ()=><window.H_ScreenDatingBadge/>,       phone: 'app',    title: 'Oppdagelse', context: 'Det er Slow Dating Dinner på Smalhans. Alle deltakere har bekreftet romantisk kontekst.' },
+      { screen: ()=><window.H_ScreenDatingDetail/>,      phone: 'app',    title: 'Detaljer',   context: 'Hun ser eventet. 3 menn, 3 kvinner, 30-42 år. Smalhans-restaurant, torsdag.' },
+      { screen: ()=><window.H_ScreenDatingConsent/>,     phone: 'app',    title: 'Samtykke',   context: 'Før hun booker må hun bekrefte 3 ting: forstår romantisk kontekst, skal respektere, ikke kontakte uten samtykke.' },
+      { screen: ()=><window.H_ScreenConfirmation/>,      phone: 'app',    title: 'Reservert',  context: 'Hun er inne. Bekreftelse.' },
+      { screen: ()=><window.H_ScreenAmbCheckin/>,        phone: 'app',    title: 'Kveldens dag', context: 'Hun kommer til Smalhans. Vertinnen Anja skanner QR-en.' },
+      { screen: ()=><window.H_ScreenDatingOptIn/>,       phone: 'app',    title: 'Neste dag',  context: 'Dagen etter. Hun har møtt Marius. Hun kan nå velge å sette ham i "dating-mode".' },
+      { screen: ()=><window.H_ScreenDatingMatch/>,       phone: 'app',    title: 'Match',      context: 'Marius valgte henne tilbake. De er nå koblet. Mildt coral hjerte.' },
+      { screen: ()=><window.H_ScreenChatDetail/>,        phone: 'app',    title: 'Første melding', context: 'De chatter. Avtaler kaffe. Men tar ting rolig.' },
+      { screen: ()=><window.H_ScreenDatingReport/>,      phone: 'app',    title: 'Sikkerhet',  context: 'Hun vet at rapport-knappen er der hvis noe går galt. Hun har den aldri trengt, men det er betryggende.' },
+    ],
+  },
+
+  'viral-loop': {
+    label: 'Viral-loop',
+    persona: 'Kari inviterer Marte — Marte blir ny bruker',
+    color: '#FAB29D',
+    description: 'Fra polaroid-deling til ny bruker onboardet — en ekte viral sekvens på 7 skjermer',
+    steps: [
+      { screen: ()=><window.H_ScreenSharedMemories/>,    phone: 'app',    title: 'Etter eventet', context: 'Kari ser en polaroid fra vinkvelden. Hun bestemmer seg for å dele med Marte.' },
+      { screen: ()=><window.H_ScreenPolaroidShare/>,     phone: 'app',    title: 'Deling',     context: 'Hun velger "Send via iMessage". Forhåndsviser polaroiden + en tekstlinje.' },
+      { screen: ()=><window.H_ScreenInvitationReceived/>,phone: 'app',    title: 'Marte mottar', context: 'Marte (28, aldri brukt Speedfriending) mottar iMessage. Klikker.' },
+      { screen: ()=><window.H_WebHome/>,                 phone: 'web',    title: 'Førsteinntrykk', context: 'Hun lander på speedfriending.no. Ser "Møt din stamme".' },
+      { screen: ()=><window.H_ScreenWelcome/>,           phone: 'app',    title: 'Installasjon', context: 'Hun installerer appen. Onboarding begynner med Vipps Login.' },
+      { screen: ()=><window.H_ScreenHome/>,              phone: 'home',   title: 'Første dag',  context: 'Hun er onboardet. Home-tab viser hennes første anbefalte event.' },
+      { screen: ()=><window.H_ScreenReferral/>,          phone: 'app',    title: 'Senere',     context: 'Tre måneder senere. Hun er aktiv bruker. Ser referral-siden og inviterer Erik.' },
+    ],
+  },
+};
+
+// ═════════════════════════════════════════════════════════════════
+// Eksisterende 10 FLOWS (uendret)
+// ═════════════════════════════════════════════════════════════════
+
+const FLOWS = {
+  social: {
+    label: 'Social — Kveldens reise',
+    start: 'home',
+    screens: {
+      'home':     { render: ()=><window.H_ScreenHome/>,         next:[['events','Events-tab'], ['welcome-back','Velkommen tilbake?']], phone:'home' },
+      'events':   { render: ()=><window.H_ScreenEvents/>,       next:[['confirm','Reserver plass'], ['search','Søk'], ['filter','Filter']], phone:'events' },
+      'confirm':  { render: ()=><window.H_ScreenConfirmation/>, next:[['calendar','Legg til kalender'], ['events','Tilbake']], phone:'app' },
+      'welcome-back':{ render: ()=><window.H_ScreenWelcomeBack/>, next:[['events','Se events']], phone:'app' },
+      'search':   { render: ()=><window.H_ScreenSearch/>,       next:[['events','Tilbake']], phone:'app' },
+      'filter':   { render: ()=><window.H_ScreenFilter/>,       next:[['events','Bruk filter']], phone:'app' },
+      'calendar': { render: ()=><window.H_ScreenCalendarInvite/>, next:[['events','Ferdig']], phone:'app' },
+    }
+  },
+  business: {
+    label: 'Business-overlay',
+    start: 'activate',
+    screens: {
+      'activate': { render: ()=><window.H_ScreenBizActivate/>, next:[['verify','Verifiser'],['profile','Profil']], phone:'app' },
+      'verify':   { render: ()=><window.H_ScreenBizVerify/>, next:[['profile','Ferdig']], phone:'app' },
+      'profile':  { render: ()=><window.H_ScreenBizProfile/>, next:[['feed','Feed']], phone:'app' },
+      'feed':     { render: ()=><window.H_ScreenBizFeed/>, next:[['detail','Event'],['switcher','Bytt']], phone:'app' },
+      'detail':   { render: ()=><window.H_ScreenBizDetail/>, next:[['feed','Tilbake']], phone:'app' },
+      'switcher': { render: ()=><window.H_ScreenBizSwitcher/>, next:[['feed','Feed']], phone:'app' },
+    }
+  },
+  dating: {
+    label: 'Dating-events',
+    start: 'badge',
+    screens: {
+      'badge':    { render: ()=><window.H_ScreenDatingBadge/>, next:[['detail','Event'],['lgbt','LHBTQ+']], phone:'app' },
+      'detail':   { render: ()=><window.H_ScreenDatingDetail/>, next:[['consent','Reserver']], phone:'app' },
+      'consent':  { render: ()=><window.H_ScreenDatingConsent/>, next:[['opt-in','Etter event']], phone:'app' },
+      'opt-in':   { render: ()=><window.H_ScreenDatingOptIn/>, next:[['match','Match']], phone:'app' },
+      'match':    { render: ()=><window.H_ScreenDatingMatch/>, next:[['report','Rapporter']], phone:'app' },
+      'lgbt':     { render: ()=><window.H_ScreenDatingLGBT/>, next:[['badge','Tilbake']], phone:'app' },
+      'report':   { render: ()=><window.H_ScreenDatingReport/>, next:[['match','Tilbake']], phone:'app' },
+    }
+  },
+  b2b: {
+    label: 'B2B — HR-leders reise',
+    start: 'landing',
+    screens: {
+      'landing':  { render: ()=><window.H_B2BLanding2/>, next:[['packages','Pakker']], phone:'web' },
+      'packages': { render: ()=><window.H_B2BPackages/>, next:[['connect','Connect']], phone:'web' },
+      'connect':  { render: ()=><window.H_B2BConnectDetail/>, next:[['dashboard','Dashboard']], phone:'web' },
+      'dashboard':{ render: ()=><window.H_B2BHRDashboard2/>, next:[['report','Rapport']], phone:'web' },
+      'report':   { render: ()=><window.H_B2BHRReport/>, next:[['dashboard','Tilbake']], phone:'web' },
+    }
+  },
+  sponsor: {
+    label: 'Sponsor-reisen',
+    start: 'landing',
+    screens: {
+      'landing':  { render: ()=><window.H_SponsorLanding/>, next:[['packages','Pakker']], phone:'web' },
+      'packages': { render: ()=><window.H_SponsorPackages/>, next:[['dashboard','Dashboard']], phone:'web' },
+      'dashboard':{ render: ()=><window.H_SponsorDashboard/>, next:[['integration','Integrering'],['report','Rapport']], phone:'web' },
+      'integration':{ render: ()=><window.H_SponsorIntegration/>, next:[['dashboard','Tilbake']], phone:'web' },
+      'report':   { render: ()=><window.H_SponsorReport/>, next:[['impact','Impact']], phone:'web' },
+      'impact':   { render: ()=><window.H_ImpactReport/>, next:[['report','Tilbake']], phone:'web' },
+    }
+  },
+  ambassador: {
+    label: 'Ambassadør-en kveld',
+    start: 'create1',
+    screens: {
+      'create1':  { render: ()=><window.H_ScreenAmbCreate1/>, next:[['create2','Detaljer']], phone:'app' },
+      'create2':  { render: ()=><window.H_ScreenAmbCreate2/>, next:[['create3','Startere']], phone:'app' },
+      'create3':  { render: ()=><window.H_ScreenAmbCreate3/>, next:[['create4','Forhåndsvisning']], phone:'app' },
+      'create4':  { render: ()=><window.H_ScreenAmbCreate4/>, next:[['checkin','Eventdag']], phone:'app' },
+      'checkin':  { render: ()=><window.H_ScreenAmbCheckin/>, next:[['during','Start']], phone:'app' },
+      'during':   { render: ()=><window.H_ScreenAmbDuring/>, next:[['after','Slutt']], phone:'app' },
+      'after':    { render: ()=><window.H_ScreenAmbAfter/>, next:[['payout','Utbetaling']], phone:'app' },
+      'payout':   { render: ()=><window.H_ScreenAmbPayout/>, next:[], phone:'app' },
+    }
+  },
+  advanced: {
+    label: 'Avanserte features',
+    start: 'tonight-start',
+    screens: {
+      'tonight-start':{ render: ()=><window.H_ScreenTonightStart/>, next:[['tonight-swipe','Swipe']], phone:'app' },
+      'tonight-swipe':{ render: ()=><window.H_ScreenTonightSwipe/>, next:[['tonight-decided','Enig']], phone:'app' },
+      'tonight-decided':{ render: ()=><window.H_ScreenTonightDecided/>, next:[['traveller-start','Traveller']], phone:'app' },
+      'traveller-start':{ render: ()=><window.H_ScreenTravellerStart/>, next:[['traveller-feed','Feed']], phone:'app' },
+      'traveller-feed':{ render: ()=><window.H_ScreenTravellerFeed/>, next:[['traveller-reflection','Hjem']], phone:'app' },
+      'traveller-reflection':{ render: ()=><window.H_ScreenTravellerReflection/>, next:[['ai-q','AI']], phone:'app' },
+      'ai-q':     { render: ()=><window.H_ScreenAIMatchQ/>, next:[['ai-result','Resultat']], phone:'app' },
+      'ai-result':{ render: ()=><window.H_ScreenAIMatchResult/>, next:[], phone:'app' },
+    }
+  },
+  wrapped: {
+    label: 'Wrapped 2026',
+    start: 'wrapped',
+    screens: {
+      'wrapped': { render: ()=><window.H_ScreenWrapped/>, next:[], phone:'app' },
+    }
+  },
+  web: {
+    label: 'Nettsiden',
+    start: 'home',
+    screens: {
+      'home':       { render: ()=><window.H_WebHome/>,        next:[['ambassador','Ambassadør'],['business','Business'],['sponsor','Sponsor'],['press','Presse'],['investor','Investor']], phone:'web' },
+      'ambassador': { render: ()=><window.H_WebAmbassador/>, next:[['home','← Hjem']], phone:'web' },
+      'business':   { render: ()=><window.H_WebBusiness/>,   next:[['home','← Hjem']], phone:'web' },
+      'sponsor':    { render: ()=><window.H_WebSponsor/>,    next:[['home','← Hjem']], phone:'web' },
+      'press':      { render: ()=><window.H_WebPress/>,      next:[['home','← Hjem']], phone:'web' },
+      'investor':   { render: ()=><window.H_WebInvestor/>,   next:[['home','← Hjem']], phone:'web' },
+    }
+  },
+};
+
+// Helper: tab-mapping
+function phoneTabFor(phoneType) {
+  if (phoneType === 'home')   return 'home';
+  if (phoneType === 'events') return 'events';
+  if (phoneType === 'crew')   return 'crew';
+  if (phoneType === 'chat')   return 'chat';
+  if (phoneType === 'you')    return 'you';
+  return undefined; // app (uten tab-bar) eller web
+}
+
+// ═════════════════════════════════════════════════════════════════
+// KOMPONENT: Storyline-spiller
+// ═════════════════════════════════════════════════════════════════
+
+function StorylinePlayer({ storyline, onExit }) {
+  const [step, setStep] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const timerRef = useRef(null);
+
+  const current = storyline.steps[step];
+  const total = storyline.steps.length;
+  const progress = ((step + 1) / total) * 100;
+
+  useEffect(() => {
+    if (playing) {
+      timerRef.current = setTimeout(() => {
+        if (step < total - 1) {
+          setStep(s => s + 1);
+        } else {
+          setPlaying(false);
+        }
+      }, 5000);
+    }
+    return () => clearTimeout(timerRef.current);
+  }, [playing, step, total]);
+
+  const next = () => { setPlaying(false); if (step < total - 1) setStep(s => s + 1); };
+  const prev = () => { setPlaying(false); if (step > 0) setStep(s => s - 1); };
+
+  return (
+    <div style={{minHeight:'100vh', background:'linear-gradient(160deg, #1A0F22 0%, #0F0812 100%)', color:'#fff', padding:'32px 20px 60px'}}>
+
+      {/* Top bar */}
+      <div style={{maxWidth:1200, margin:'0 auto 20px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+        <button onClick={onExit} style={{padding:'8px 14px', borderRadius:18, border:'1px solid rgba(255,255,255,.15)', background:'rgba(255,255,255,.05)', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit'}}>
+          ← Alle storylines
+        </button>
+        <div style={{fontSize:11, color:'rgba(255,255,255,.4)', fontWeight:600, textTransform:'uppercase', letterSpacing:'.14em'}}>
+          Storyline · Skjerm {step+1} av {total}
+        </div>
+      </div>
+
+      {/* Storyline-header med persona og progresjon */}
+      <div style={{maxWidth:1200, margin:'0 auto 24px'}}>
+        <div style={{fontFamily:'Fraunces, serif', fontSize:30, fontWeight:700, letterSpacing:'-0.02em', color:'#fff', marginBottom:6}}>
+          {storyline.label}
+        </div>
+        <div style={{fontSize:13, color:storyline.color, fontWeight:600, marginBottom:16}}>
+          {storyline.persona}
+        </div>
+
+        {/* Progresjonsbar */}
+        <div style={{height:3, borderRadius:2, background:'rgba(255,255,255,.08)', overflow:'hidden', marginBottom:12}}>
+          <div style={{height:'100%', width:`${progress}%`, background:`linear-gradient(90deg, ${storyline.color}, #F0826B)`, borderRadius:2, transition:'width .4s'}}/>
+        </div>
+
+        {/* Skjerm-prikker */}
+        <div style={{display:'flex', gap:4, marginBottom:16}}>
+          {storyline.steps.map((_, i) => (
+            <button key={i} onClick={()=>{setStep(i); setPlaying(false);}} style={{
+              flex:1, height:4, borderRadius:2, border:'none', padding:0, cursor:'pointer',
+              background: i <= step ? storyline.color : 'rgba(255,255,255,.12)',
+              transition:'background .2s',
+            }}/>
+          ))}
+        </div>
+      </div>
+
+      {/* Kontekst-tekst */}
+      <div style={{maxWidth:720, margin:'0 auto 20px', textAlign:'center'}}>
+        <div style={{fontSize:11, fontWeight:700, letterSpacing:'.18em', textTransform:'uppercase', color:storyline.color, marginBottom:8}}>
+          {current.title}
+        </div>
+        <div style={{fontFamily:'Fraunces, serif', fontSize:18, fontWeight:400, fontStyle:'italic', lineHeight:1.5, color:'rgba(255,255,255,.82)'}}>
+          "{current.context}"
+        </div>
+      </div>
+
+      {/* Telefonramme */}
+      <div style={{display:'flex', justifyContent:'center', marginBottom:24}}>
+        <H_Phone activeTab={phoneTabFor(current.phone)}>
+          {current.screen()}
+        </H_Phone>
+      </div>
+
+      {/* Play-kontroller */}
+      <div style={{display:'flex', justifyContent:'center', gap:10, marginBottom:30}}>
+        <button onClick={prev} disabled={step===0} style={{
+          width:48, height:48, borderRadius:24, border:'1px solid rgba(255,255,255,.15)',
+          background:'rgba(255,255,255,.05)', color:'#fff', cursor: step===0 ? 'default' : 'pointer',
+          opacity: step===0 ? .3 : 1, display:'inline-flex', alignItems:'center', justifyContent:'center',
+        }}>
+          <svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 2L4 8l6 6" stroke="#fff" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </button>
+        <button onClick={()=>setPlaying(p=>!p)} style={{
+          height:48, padding:'0 22px', borderRadius:24, border:'none',
+          background: playing ? '#F0826B' : 'linear-gradient(100deg, #F0826B, #7F4D95)',
+          color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'inherit',
+          display:'inline-flex', alignItems:'center', gap:8,
+          boxShadow:'0 8px 20px rgba(240,130,107,.35)',
+        }}>
+          {playing ? (
+            <><span style={{width:8, height:8, background:'#fff', animation:'pulseDot 1s ease-in-out infinite'}}/> Spiller</>
+          ) : (
+            <><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 1v10l9-5z" fill="#fff"/></svg> Spill av</>
+          )}
+        </button>
+        <button onClick={next} disabled={step===total-1} style={{
+          width:48, height:48, borderRadius:24, border:'1px solid rgba(255,255,255,.15)',
+          background:'rgba(255,255,255,.05)', color:'#fff', cursor: step===total-1 ? 'default' : 'pointer',
+          opacity: step===total-1 ? .3 : 1, display:'inline-flex', alignItems:'center', justifyContent:'center',
+        }}>
+          <svg width="16" height="16" viewBox="0 0 16 16"><path d="M6 2l6 6-6 6" stroke="#fff" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div style={{textAlign:'center', fontSize:11, color:'rgba(255,255,255,.35)'}}>
+        Auto-advance hver 5 sek når "Spill av" er aktiv · Klikk prikker over for å hoppe
+      </div>
+    </div>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════
+// KOMPONENT: Flow-utforsker (eksisterende atferd)
+// ═════════════════════════════════════════════════════════════════
+
+function FlowExplorer({ onExit }) {
+  const [flowKey, setFlowKey] = useState('social');
+  const [screenKey, setScreenKey] = useState(FLOWS.social.start);
+  const [history, setHistory] = useState([]);
+
+  const flow = FLOWS[flowKey];
+  const screen = flow.screens[screenKey];
+
+  const goTo = (newKey) => { setHistory(h => [...h, screenKey]); setScreenKey(newKey); };
+  const goBack = () => { if (history.length === 0) return; const last = history[history.length - 1]; setHistory(h => h.slice(0, -1)); setScreenKey(last); };
+  const switchFlow = (key) => { setFlowKey(key); setScreenKey(FLOWS[key].start); setHistory([]); };
+
+  return (
+    <div style={{minHeight:'100vh', background:'linear-gradient(160deg, #1A0F22 0%, #0F0812 100%)', color:'#fff', padding:'32px 20px 60px'}}>
+      <div style={{maxWidth:1200, margin:'0 auto 20px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+        <button onClick={onExit} style={{padding:'8px 14px', borderRadius:18, border:'1px solid rgba(255,255,255,.15)', background:'rgba(255,255,255,.05)', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit'}}>← Tilbake til meny</button>
+        <div style={{fontSize:11, color:'rgba(255,255,255,.4)', fontWeight:600, textTransform:'uppercase', letterSpacing:'.14em'}}>Quick Flow · Utforsk fritt</div>
+      </div>
+
+      {/* Flow-selector */}
+      <div style={{maxWidth:1200, margin:'0 auto 28px'}}>
+        <div style={{display:'flex', flexWrap:'wrap', gap:8}}>
+          {Object.entries(FLOWS).map(([key, f]) => (
+            <button key={key} onClick={()=>switchFlow(key)} style={{
+              padding:'10px 14px', borderRadius:12,
+              border: flowKey===key ? '1.5px solid #F0826B' : '1px solid rgba(255,255,255,.15)',
+              background: flowKey===key ? 'rgba(240,130,107,.15)' : 'rgba(255,255,255,.03)',
+              color: flowKey===key ? '#fff' : 'rgba(255,255,255,.7)',
+              fontSize:12.5, fontWeight: flowKey===key ? 700 : 500, cursor:'pointer', fontFamily:'inherit',
+            }}>{f.label}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Flow-info */}
+      <div style={{maxWidth:1200, margin:'0 auto 24px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+        <div style={{fontFamily:'Fraunces, serif', fontSize:22, color:'#fff', fontWeight:600}}>{flow.label}</div>
+        {history.length > 0 && (
+          <button onClick={goBack} style={{padding:'10px 16px', borderRadius:22, border:'1px solid rgba(255,255,255,.2)', background:'rgba(255,255,255,.05)', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'inherit'}}>← Tilbake</button>
+        )}
+      </div>
+
+      {/* Telefonramme */}
+      <div style={{display:'flex', justifyContent:'center', marginBottom:24}}>
+        <H_Phone activeTab={phoneTabFor(screen.phone)}>
+          {screen.render()}
+        </H_Phone>
+      </div>
+
+      {/* Neste-skjermer */}
+      {screen.next && screen.next.length > 0 && (
+        <div style={{maxWidth:900, margin:'0 auto'}}>
+          <div style={{fontSize:10.5, fontWeight:700, letterSpacing:'.18em', textTransform:'uppercase', color:'rgba(255,255,255,.4)', marginBottom:12, textAlign:'center'}}>Klikk for å gå videre</div>
+          <div style={{display:'flex', flexWrap:'wrap', gap:10, justifyContent:'center'}}>
+            {screen.next.map(([targetKey, label]) => (
+              <button key={targetKey} onClick={()=>goTo(targetKey)} style={{
+                padding:'14px 22px', borderRadius:26, border:'none',
+                background:'linear-gradient(100deg, #F0826B, #7F4D95)',
+                color:'#fff', fontSize:13.5, fontWeight:700, cursor:'pointer',
+                boxShadow:'0 8px 20px rgba(240,130,107,.35)', fontFamily:'inherit',
+              }}>{label} →</button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════
+// KOMPONENT: Hovedmeny (storylines + flows)
+// ═════════════════════════════════════════════════════════════════
+
+function Menu({ onSelectStoryline, onOpenFlows }) {
+  return (
+    <div style={{minHeight:'100vh', background:'linear-gradient(160deg, #1A0F22 0%, #0F0812 100%)', color:'#fff', padding:'48px 20px 60px'}}>
+
+      {/* Masthead */}
+      <div style={{maxWidth:1200, margin:'0 auto 36px', paddingBottom:28, borderBottom:'1px solid rgba(255,255,255,.1)'}}>
+        <div style={{fontSize:11, fontWeight:700, letterSpacing:'.22em', textTransform:'uppercase', color:'#B788C9', marginBottom:8}}>Klikkbar prototype v2 · Storylines</div>
+        <div style={{fontFamily:'Fraunces, serif', fontSize:48, fontWeight:700, letterSpacing:'-0.025em', color:'#fff', lineHeight:1}}>Speedfriending.</div>
+        <div style={{fontSize:15, color:'rgba(255,255,255,.55)', marginTop:12, maxWidth:720, lineHeight:1.55}}>
+          Velg en <em>storyline</em> for å følge en ekte produktreise fra start til slutt — med kontekst, persona og auto-play. Eller utforsk skjermene fritt under "Quick Flows".
+        </div>
+      </div>
+
+      {/* Storylines */}
+      <div style={{maxWidth:1200, margin:'0 auto 48px'}}>
+        <div style={{fontSize:11, fontWeight:700, letterSpacing:'.2em', textTransform:'uppercase', color:'#F0826B', marginBottom:20}}>6 Storylines · tverr-reiser</div>
+        <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:14}}>
+          {Object.entries(STORYLINES).map(([key, s]) => (
+            <button key={key} onClick={()=>onSelectStoryline(key)} style={{
+              textAlign:'left', padding:'22px 22px 20px', borderRadius:18,
+              border:'1px solid rgba(255,255,255,.1)',
+              background:'rgba(255,255,255,.03)',
+              cursor:'pointer', fontFamily:'inherit', color:'#fff',
+              transition:'all .2s',
+              position:'relative', overflow:'hidden',
+            }}
+            onMouseEnter={e => {e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = 'rgba(255,255,255,.07)';}}
+            onMouseLeave={e => {e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = 'rgba(255,255,255,.03)';}}
+            >
+              <div style={{position:'absolute', top:0, left:0, right:0, height:3, background:s.color}}/>
+              <div style={{fontSize:10, fontWeight:700, letterSpacing:'.16em', textTransform:'uppercase', color:s.color, marginBottom:10}}>
+                {s.steps.length} skjermer
+              </div>
+              <div style={{fontFamily:'Fraunces, serif', fontSize:22, fontWeight:600, letterSpacing:'-0.01em', color:'#fff', marginBottom:6}}>
+                {s.label}
+              </div>
+              <div style={{fontSize:12, color:'rgba(255,255,255,.55)', marginBottom:12, fontStyle:'italic'}}>
+                {s.persona}
+              </div>
+              <div style={{fontSize:13, color:'rgba(255,255,255,.75)', lineHeight:1.5}}>
+                {s.description}
+              </div>
+              <div style={{marginTop:16, fontSize:12, color:s.color, fontWeight:600, display:'inline-flex', alignItems:'center', gap:6}}>
+                Start reisen →
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick flows */}
+      <div style={{maxWidth:1200, margin:'0 auto 36px'}}>
+        <div style={{fontSize:11, fontWeight:700, letterSpacing:'.2em', textTransform:'uppercase', color:'#B788C9', marginBottom:20}}>Quick Flows · fri utforsking</div>
+        <button onClick={onOpenFlows} style={{
+          padding:'20px 26px', borderRadius:18,
+          border:'1px solid rgba(255,255,255,.12)',
+          background:'rgba(255,255,255,.05)',
+          cursor:'pointer', fontFamily:'inherit', color:'#fff',
+          display:'flex', alignItems:'center', gap:18, width:'100%',
+          textAlign:'left',
+        }}>
+          <div style={{fontSize:32}}>🗂</div>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:'Fraunces, serif', fontSize:20, fontWeight:600, color:'#fff', marginBottom:4}}>
+              Utforsk 100+ skjermer fritt
+            </div>
+            <div style={{fontSize:13, color:'rgba(255,255,255,.55)'}}>
+              10 flows · Social, Business, Dating, B2B, Sponsor, Ambassadør, Avanserte features, Wrapped, Nettside — klikk deg gjennom i din egen rekkefølge.
+            </div>
+          </div>
+          <div style={{fontSize:14, color:'#B788C9', fontWeight:600}}>→</div>
+        </button>
+      </div>
+
+      {/* Footer med lenker */}
+      <div style={{maxWidth:1200, margin:'0 auto', paddingTop:28, borderTop:'1px solid rgba(255,255,255,.08)', display:'flex', flexWrap:'wrap', justifyContent:'space-between', gap:14, fontSize:12, color:'rgba(255,255,255,.4)'}}>
+        <div>Speedfriending · 100+ skjermer · bygget i Claude Code · april 2026</div>
+        <div style={{display:'flex', gap:20}}>
+          <a href="Hjem.html" style={{color:'rgba(255,255,255,.55)'}}>Galleri med alle skjermer</a>
+          <span>·</span>
+          <a href="../../FEEDBACK.md" style={{color:'rgba(255,255,255,.55)'}}>FEEDBACK.md</a>
+          <span>·</span>
+          <a href="../../APP_MAP.md" style={{color:'rgba(255,255,255,.55)'}}>APP_MAP.md</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════
+// APP — ruter mellom menyen, storylines, og flows
+// ═════════════════════════════════════════════════════════════════
+
+function App() {
+  const [mode, setMode] = useState('menu'); // 'menu' | 'storyline' | 'flow'
+  const [storylineKey, setStorylineKey] = useState(null);
+
+  if (mode === 'menu') {
+    return <Menu
+      onSelectStoryline={(key) => { setStorylineKey(key); setMode('storyline'); }}
+      onOpenFlows={() => setMode('flow')}
+    />;
+  }
+
+  if (mode === 'storyline' && storylineKey) {
+    return <StorylinePlayer
+      storyline={STORYLINES[storylineKey]}
+      onExit={() => setMode('menu')}
+    />;
+  }
+
+  if (mode === 'flow') {
+    return <FlowExplorer onExit={() => setMode('menu')}/>;
+  }
+
+  return null;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
